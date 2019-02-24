@@ -8,6 +8,10 @@ export interface ApolloProviderProps<TCacheShape> {
   readonly client: ApolloClient<TCacheShape>;
 }
 
+export interface UseClientOptions<TCacheShape> {
+  client?: ApolloClient<TCacheShape>;
+}
+
 export function ApolloProvider<TCacheShape = any>({
   client,
   children,
@@ -19,15 +23,23 @@ export function ApolloProvider<TCacheShape = any>({
   );
 }
 
-export function useApolloClient<TCache = object>(): ApolloClient<TCache> {
-  const client = useContext(ApolloContext);
+export function useApolloClient<TCache = object>({
+  client: clientFromOptions,
+}: UseClientOptions<TCache> = {}): ApolloClient<TCache> {
+  // Must always call useContext to maintain the ordering of hooks, even if
+  // client is obtained from options
+  let client = useContext(ApolloContext);
+
+  if (clientFromOptions) {
+    client = clientFromOptions;
+  }
 
   if (!client) {
-    // https://github.com/apollographql/react-apollo/blob/5cb63b3625ce5e4a3d3e4ba132eaec2a38ef5d90/src/component-utils.tsx#L19-L22
+    // Adapted from https://github.com/apollographql/react-apollo/blob/5cb63b3625ce5e4a3d3e4ba132eaec2a38ef5d90/src/component-utils.tsx#L19-L22
     throw new Error(
-      'Could not find "client" in the context or passed in as a prop. ' +
+      'Could not find "client" in the context or passed in as an option. ' +
         'Wrap the root component in an <ApolloProvider>, or pass an ' +
-        'ApolloClient instance in via props.'
+        'ApolloClient instance in via options.'
     );
   }
   return client;

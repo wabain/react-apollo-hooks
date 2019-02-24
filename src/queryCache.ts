@@ -11,8 +11,8 @@ const cachedQueriesByClient = new WeakMap<
   Map<any, ObservableQuery<any, any>>
 >();
 
-export function getCachedObservableQuery<TData, TVariables>(
-  client: ApolloClient<any>,
+export function getCachedObservableQuery<TData, TVariables, TCacheShape = any>(
+  client: ApolloClient<TCacheShape>,
   options: WatchQueryOptions<TVariables>
 ): ObservableQuery<TData, TVariables> {
   const queriesForClient = getCachedQueriesForClient(client);

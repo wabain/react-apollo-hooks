@@ -3,7 +3,7 @@ import { MutationOptions, OperationVariables } from 'apollo-client';
 import { FetchResult } from 'apollo-link';
 import { DocumentNode } from 'graphql';
 
-import { useApolloClient } from './ApolloContext';
+import { UseClientOptions, useApolloClient } from './ApolloContext';
 import { Omit } from './utils';
 
 export type MutationUpdaterFn<TData = Record<string, any>> = (
@@ -24,11 +24,18 @@ export type MutationFn<TData, TVariables> = (
   options?: MutationHookOptions<TData, TVariables>
 ) => Promise<FetchResult<TData>>;
 
-export function useMutation<TData, TVariables = OperationVariables>(
+export function useMutation<
+  TData,
+  TVariables = OperationVariables,
+  TCacheShape = object
+>(
   mutation: DocumentNode,
-  baseOptions?: MutationHookOptions<TData, TVariables>
+  {
+    client: clientFromOptions,
+    ...baseOptions
+  }: MutationHookOptions<TData, TVariables> & UseClientOptions<TCacheShape> = {}
 ): MutationFn<TData, TVariables> {
-  const client = useApolloClient();
+  const client = useApolloClient({ client: clientFromOptions });
 
   return options => client.mutate({ mutation, ...baseOptions, ...options });
 }

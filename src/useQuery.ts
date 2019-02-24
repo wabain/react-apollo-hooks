@@ -13,7 +13,7 @@ import {
 } from 'apollo-client';
 import { DocumentNode } from 'graphql';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { useApolloClient } from './ApolloContext';
+import { UseClientOptions, useApolloClient } from './ApolloContext';
 import { SSRContext } from './internal/SSRContext';
 import actHack from './internal/actHack';
 import {
@@ -55,7 +55,11 @@ export interface QueryHookResult<TData, TVariables>
   ): Promise<ApolloQueryResult<TData>>;
 }
 
-export function useQuery<TData = any, TVariables = OperationVariables>(
+export function useQuery<
+  TData = any,
+  TVariables = OperationVariables,
+  TCacheShape = object
+>(
   query: DocumentNode,
   {
     // Hook options
@@ -74,9 +78,12 @@ export function useQuery<TData = any, TVariables = OperationVariables>(
     fetchPolicy: actualCachePolicy,
     errorPolicy,
     fetchResults,
-  }: QueryHookOptions<TVariables> = {}
+
+    // Client injection support
+    client: clientFromOptions,
+  }: QueryHookOptions<TVariables> & UseClientOptions<TCacheShape> = {}
 ): QueryHookResult<TData, TVariables> {
-  const client = useApolloClient();
+  const client = useApolloClient({ client: clientFromOptions });
   const ssrManager = useContext(SSRContext);
   const ssrInUse = ssr && ssrManager;
 

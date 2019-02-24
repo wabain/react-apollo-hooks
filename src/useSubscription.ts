@@ -7,7 +7,7 @@ import {
 import { DocumentNode } from 'graphql';
 import { useEffect, useRef, useState } from 'react';
 
-import { useApolloClient } from './ApolloContext';
+import { UseClientOptions, useApolloClient } from './ApolloContext';
 import actHack from './internal/actHack';
 import { Omit, objToKey } from './utils';
 
@@ -31,14 +31,20 @@ export interface SubscriptionHookResult<TData> {
   loading: boolean;
 }
 
-export function useSubscription<TData = any, TVariables = OperationVariables>(
+export function useSubscription<
+  TData = any,
+  TVariables = OperationVariables,
+  TCacheShape = object
+>(
   query: DocumentNode,
   {
     onSubscriptionData,
+    client: clientFromOptions,
     ...options
-  }: SubscriptionHookOptions<TData, TVariables> = {}
+  }: SubscriptionHookOptions<TData, TVariables> &
+    UseClientOptions<TCacheShape> = {}
 ): SubscriptionHookResult<TData> {
-  const client = useApolloClient();
+  const client = useApolloClient({ client: clientFromOptions });
   const onSubscriptionDataRef = useRef<
     OnSubscriptionData<TData> | null | undefined
   >(null);
